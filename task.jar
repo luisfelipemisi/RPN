@@ -51,7 +51,7 @@ public class Stack {
         double result = 0.0;
         Stack p = new Stack();
         try {
-          File myObj = new File("Calc1.stk");
+          File myObj = new File("/Calc1.stk");
           Scanner myReader = new Scanner(myObj);
           while (myReader.hasNextLine()) {
             String d = myReader.nextLine();
@@ -72,7 +72,7 @@ public class Stack {
                     result = op1 * op2;
                     p.push(result);
                 }else if(d.contains("^")){
-                    result = Math.pow(op1, op2);
+                    result = Math.pow(op2, op1);
                     p.push(result);
                 }
             }else{
