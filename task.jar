@@ -1,0 +1,96 @@
+import java.io.File;  // Import the File class
+import java.io.FileNotFoundException;  // Import this class to handle errors
+import java.util.Scanner; // Import the Scanner class to read text files
+
+public class Stack {
+
+    public Double[] stack;
+    public int stackPosition;
+
+    public Stack() {
+        this.stackPosition = -1;
+        this.stack = new Double[1000];
+    }
+
+    public boolean emptyStack() {
+        if (this.stackPosition == -1) {
+            return true;
+        }
+        return false;
+    }
+
+    public int len() {
+        if (this.emptyStack()) {
+            return 0;
+        }
+        return this.stackPosition + 1;
+    }
+
+    public Double top() {
+        if (this.emptyStack()) {
+            return null;
+        }
+        return this.stack[this.stackPosition];
+    }
+
+    public Double pop() {
+        if (emptyStack()) {
+            return null;
+        }
+        return this.stack[this.stackPosition--];
+    }
+
+    public void push(Double valor) {
+        if (this.stackPosition < this.stack.length - 1) {
+            this.stack[++stackPosition] = valor;
+        }
+    }
+
+    public static void main(String args[]) {
+        String data = "";
+        double result = 0.0;
+        Stack p = new Stack();
+        try {
+          File myObj = new File("Calc1.stk");
+          Scanner myReader = new Scanner(myObj);
+          while (myReader.hasNextLine()) {
+            String d = myReader.nextLine();
+            if (d.contains("+") || d.contains("-") || d.contains("*") || d.contains("/") || d.contains("^")){
+                double op1 = p.pop();
+                double op2 = p.pop();
+            
+                if(d.contains("+")){
+                    result = op1 + op2;
+                    p.push(result);
+                }else if(d.contains("-")){
+                    result = op1 - op2;
+                    p.push(result);
+                }else if(d.contains("/")){
+                    result = op1/op2;
+                    p.push(result);
+                }else if(d.contains("*")){
+                    result = op1 * op2;
+                    p.push(result);
+                }else if(d.contains("^")){
+                    result = Math.pow(op1, op2);
+                    p.push(result);
+                }
+            }else{
+                double f = Double.parseDouble(d);
+                p.push(f);
+            }
+          }
+        
+            if (p.len() > 1){
+                System.out.println("invalid expression");
+            }else{
+                double f = p.pop();
+                System.out.println(f);
+            }
+          myReader.close();
+        } catch (FileNotFoundException e) {
+          System.out.println("An error occurred.");
+          e.printStackTrace();
+        }
+    }
+}
