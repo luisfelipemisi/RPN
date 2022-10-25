@@ -1,6 +1,9 @@
-import java.io.File;  // Import the File class
-import java.io.FileNotFoundException;  // Import this class to handle errors
+import java.io.File; // Import the File class
+import java.io.FileNotFoundException; // Import this class to handle errors
 import java.util.Scanner; // Import the Scanner class to read text files
+import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Stack {
 
@@ -46,51 +49,128 @@ public class Stack {
         }
     }
 
+    public static boolean isNum(String token) {
+        if (token == null) {
+            return false;
+        }
+        try {
+            double d = Double.parseDouble(token);
+        } catch (NumberFormatException nfe) {
+            return false;
+        }
+        return true;
+    }
+    public static boolean isID(String token) {
+    if (token.matches("[a-zA-Z]*")) {
+        return true;
+    }
+    return false;
+    }
+    public static boolean isOP(String token) {
+        Pattern pattern = Pattern.compile("[[\\^][\\-][\\*][\\+][/]]", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(token);
+        boolean matchFound = matcher.find();
+          if (matchFound) {
+              return true;
+          }
+          return false;
+    }
+
+    public static Double processToken(String token, Double op1, Double op2) {
+        Double result = 0.0;
+        if (token.contains("+")) {
+            result = op1 + op2;
+            System.out.printf("Token [type=PLUS, lexeme=+]\n");
+            return result;
+        } else if (token.contains("-")) {
+            result = op1 - op2;
+            System.out.printf("Token [type=MINUS, lexeme=-]\n");
+            return result;
+        } else if (token.contains("/")) {
+            result = op1 / op2;
+            System.out.printf("Token [type=SLASH, lexeme=/]\n");
+            return result;
+        } else if (token.contains("*")) {
+            result = op1 * op2;
+            System.out.printf("Token [type=STAR, lexeme=*]\n");
+            return result;
+        } else if (token.contains("^")) {
+            result = Math.pow(op2, op1);
+            System.out.printf("Token [type=POT, lexeme=^]\n");
+            return result;
+        }
+        return 0.0;
+    }
+
     public static void main(String args[]) {
         String data = "";
         double result = 0.0;
         Stack p = new Stack();
+        HashMap<String, String> ids = new HashMap<String, String>();
         try {
-          File myObj = new File("/Calc1.stk");
-          Scanner myReader = new Scanner(myObj);
-          while (myReader.hasNextLine()) {
-            String d = myReader.nextLine();
-            if (d.contains("+") || d.contains("-") || d.contains("*") || d.contains("/") || d.contains("^")){
-                double op1 = p.pop();
-                double op2 = p.pop();
-            
-                if(d.contains("+")){
-                    result = op1 + op2;
-                    p.push(result);
-                }else if(d.contains("-")){
-                    result = op1 - op2;
-                    p.push(result);
-                }else if(d.contains("/")){
-                    result = op1/op2;
-                    p.push(result);
-                }else if(d.contains("*")){
-                    result = op1 * op2;
-                    p.push(result);
-                }else if(d.contains("^")){
-                    result = Math.pow(op2, op1);
-                    p.push(result);
+            File myObj = new File("/Calc1.stk");
+            Scanner myReader = new Scanner(myObj);
+            while (myReader.hasNextLine()) {
+                String d = myReader.nextLine();
+                if (isOP(d)) {
+                    double op1 = p.pop();
+                    double op2 = p.pop();
+                    p.push(processToken(d, op1, op2));
+                    
+                } else if (isNum(d)) {
+                    double f = Double.parseDouble(d);
+                    System.out.printf("Token [type=NUM, lexeme=%f]\n", f);
+                    p.push(f);
+                } else if (ids.get(d) != null) {
+                    Double idNUM = Double.parseDouble(ids.get(d));
+                    p.push(idNUM);
+                } else if (isID(d)) {
+                    String id = d ;
+                    d = myReader.nextLine();
+                    if(d.contains("=") ){
+                        d = myReader.nextLine();
+                        if(isNum(d)){
+                            ids.put(id, d);
+                            System.out.printf("Token [type=ID, lexeme=%s]\n", id);
+                        }else {
+                            System.out.printf("Unexpected character:%s", d);
+                            return;
+                        }
+                    }else if (isOP(d)) {
+                        double op1 = p.pop();
+                        double op2 = p.pop();
+                        p.push(processToken(d, op1, op2));
+                        
+                    }else if (isNum(d)) {
+                        double f = Double.parseDouble(d);
+                        System.out.printf("Token [type=NUM, lexeme=%f]\n", f);
+                        p.push(f);
+                    }else if (ids.get(d) != null) {
+                        Double idNUM = Double.parseDouble(ids.get(d));
+                        double op1 = p.pop();
+                        p.push(processToken(d, op1, idNUM));
+                        return;
+                    }else {
+                        System.out.printf("Unexpected character:%s", d);
+                        return;
+                    }
+                    
+                } else {
+                    System.out.printf("Unexpected character:%s", d);
+                    return;
                 }
-            }else{
-                double f = Double.parseDouble(d);
-                p.push(f);
             }
-          }
-        
-            if (p.len() > 1){
+
+            if (p.len() > 1) {
                 System.out.println("invalid expression");
-            }else{
+            } else {
                 double f = p.pop();
                 System.out.println(f);
             }
-          myReader.close();
+            myReader.close();
         } catch (FileNotFoundException e) {
-          System.out.println("An error occurred.");
-          e.printStackTrace();
+            System.out.println("An error occurred.");
+            e.printStackTrace();
         }
     }
 }
